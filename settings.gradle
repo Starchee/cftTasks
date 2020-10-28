@@ -1,3 +1,4 @@
+include ':2.0.CustomView'
 include ':1.2.ServiceTask'
 include ':1.3.ContentProviderTask'
 include ':1.1.FragmentNavigationTask'
