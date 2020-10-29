@@ -1,5 +1,8 @@
 package com.starchee.customview
 
+import android.animation.AnimatorSet
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -10,6 +13,8 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.LinearInterpolator
+import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
@@ -22,24 +27,91 @@ class SpeedometerView @JvmOverloads constructor(
     defStyleRes: Int = 0
 ) : View(context, attributeSet, defStyleAttr, defStyleRes) {
     private val paint = Paint(ANTI_ALIAS_FLAG)
-    private var count = 7f
-    private var size = 500
+    private var speedometerSize = 500
+    private var padding = 20
+    private var radius = (speedometerSize - padding*2) / 2f
+    private var currentSpeed = 0
 
-    private var firstZoneColor: Int? = null
-    private var secondZoneColor: Int? = null
-    private var thirdZoneColor: Int? = null
+    private var currentWarningColor = Color.GREEN
+
+    private var speedUpAnimatorSet: AnimatorSet? = null
+    private var speedDownAnimatorSet: AnimatorSet? = null
+
     private var speedometerHandColor: Int? = null
     private var borderColor: Int? = null
+
+    private var backgroundColor: Int? = null
+
     private var degreeTextColor: Int? = null
     private var degreeTextSize: Float? = null
 
 
     companion object {
-        const val SUPER_STATE = "super_state"
-        const val COUNT_STATE_KEY = "count_state"
+        private const val SUPER_STATE = "super_state"
+        private const val CURRENT_SPEED_STATE_KEY = "current_speed_state"
+        private const val ACCELERATION_SPEED_IN_MS = 14000L
+        private const val MAX_SPEED = 240
+        private const val SPEED_FACTOR = ((-7 * PI / 4 + 1 * PI / 4) / MAX_SPEED).toFloat()
+        private const val SPEED_SHIFT = 1 * PI.toFloat() / 4
     }
 
     init {
+        initParams(context, attributeSet, defStyleAttr)
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val width = measureDimension(widthMeasureSpec)
+        val height = measureDimension(heightMeasureSpec)
+
+        speedometerSize = min(width, height)
+
+        setMeasuredDimension(speedometerSize, speedometerSize)
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+
+        drawBackground(canvas)
+        drawSpeedometerWarning(canvas)
+        drawBorder(canvas)
+        drawDegreeText(canvas)
+        drawSpeedometerHand(canvas)
+    }
+
+    override fun onSaveInstanceState(): Parcelable? =
+        Bundle().apply {
+            putInt(CURRENT_SPEED_STATE_KEY, currentSpeed)
+            putParcelable(SUPER_STATE, super.onSaveInstanceState())
+        }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        var superState = state
+
+        if (state is Bundle) {
+            currentSpeed = state.getInt(CURRENT_SPEED_STATE_KEY)
+            superState = state.getParcelable(SUPER_STATE)
+        }
+        super.onRestoreInstanceState(superState)
+    }
+
+    fun start() {
+        speedDownAnimatorSet?.cancel()
+        initSpeedUpAnimatorSet()
+        speedUpAnimatorSet?.start()
+
+    }
+
+    fun stop() {
+        speedUpAnimatorSet?.cancel()
+        initSpeedDownAnimatorSet()
+        speedDownAnimatorSet?.start()
+    }
+
+    private fun initParams(
+        context: Context,
+        attributeSet: AttributeSet?,
+        defStyleAttr: Int
+    ) {
         val typedArray = context.obtainStyledAttributes(
             attributeSet,
             R.styleable.SpeedometerView,
@@ -48,16 +120,13 @@ class SpeedometerView @JvmOverloads constructor(
         )
 
         try {
-            firstZoneColor =
-                typedArray.getColor(R.styleable.SpeedometerView_firstZoneColor, Color.GREEN)
-            secondZoneColor =
-                typedArray.getColor(R.styleable.SpeedometerView_secondZoneColor, Color.YELLOW)
-            thirdZoneColor =
-                typedArray.getColor(R.styleable.SpeedometerView_thirdZoneColor, Color.RED)
             speedometerHandColor =
                 typedArray.getColor(R.styleable.SpeedometerView_speedometerHandColor, Color.BLUE)
             borderColor =
                 typedArray.getColor(R.styleable.SpeedometerView_borderColor, Color.BLUE)
+            backgroundColor =
+                typedArray.getColor(R.styleable.SpeedometerView_backgroundColor, Color.WHITE)
+
             degreeTextColor =
                 typedArray.getColor(R.styleable.SpeedometerView_degreeTextColor, Color.BLUE)
             degreeTextSize =
@@ -67,55 +136,52 @@ class SpeedometerView @JvmOverloads constructor(
         }
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-
-        val width = measureDimension(widthMeasureSpec)
-        val height = measureDimension(heightMeasureSpec)
-
-        size = min(width, height)
-
-        setMeasuredDimension(size, size)
-    }
-
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
-
-        val radius = size / 2f
-
-        drawSpeedometerSections(canvas)
-        drawBorder(canvas, radius)
-        drawSpeedometerDegree(canvas, radius)
-        drawSpeedometerHand(canvas, radius)
-    }
-
-    override fun onSaveInstanceState(): Parcelable? =
-        Bundle().apply {
-            putFloat(COUNT_STATE_KEY, count)
-            putParcelable(SUPER_STATE, super.onSaveInstanceState())
+    private fun initSpeedUpAnimatorSet() {
+        val speedUpAnimator = ValueAnimator.ofInt(currentSpeed, MAX_SPEED).apply {
+            duration = ACCELERATION_SPEED_IN_MS
+            interpolator = LinearOutSlowInInterpolator()
+            addUpdateListener {
+                currentSpeed = it.animatedValue as Int
+                invalidate()
+            }
         }
 
-    override fun onRestoreInstanceState(state: Parcelable?) {
-        var superState = state
-
-        if (state is Bundle) {
-            count = state.getFloat(COUNT_STATE_KEY)
-            superState = state.getParcelable(SUPER_STATE)
+        val colorUpAnimator = ValueAnimator.ofInt(Color.GREEN, Color.RED).apply {
+            setEvaluator(ArgbEvaluator())
+            duration = ACCELERATION_SPEED_IN_MS
+            interpolator = LinearInterpolator()
+            addUpdateListener {
+                currentWarningColor = it.animatedValue as Int
+                invalidate()
+            }
         }
-        super.onRestoreInstanceState(superState)
+        speedUpAnimatorSet = AnimatorSet()
+        speedUpAnimatorSet?.play(speedUpAnimator)?.with(colorUpAnimator)
+
     }
 
-    fun speedUp() {
-        if (count > 1) {
-            count -= 0.1f
-            invalidate()
-        }
-    }
 
-    fun speedDown() {
-        if (count < 7) {
-            count += 0.1f
-            invalidate()
+    private fun initSpeedDownAnimatorSet() {
+        val speedDownAnimator = ValueAnimator.ofInt(currentSpeed, 0).apply {
+            duration = 2 * ACCELERATION_SPEED_IN_MS / MAX_SPEED * currentSpeed
+            interpolator = LinearInterpolator()
+            addUpdateListener {
+                currentSpeed = it.animatedValue as Int
+                invalidate()
+            }
         }
+
+        val colorDownAnimator = ValueAnimator.ofInt(currentWarningColor, Color.GREEN).apply {
+            setEvaluator(ArgbEvaluator())
+            duration = 2 * ACCELERATION_SPEED_IN_MS / MAX_SPEED * currentSpeed
+            interpolator = LinearInterpolator()
+            addUpdateListener {
+                currentWarningColor = it.animatedValue as Int
+                invalidate()
+            }
+        }
+        speedDownAnimatorSet = AnimatorSet()
+        speedDownAnimatorSet?.play(speedDownAnimator)?.with(colorDownAnimator)
     }
 
     private fun measureDimension(measureSpec: Int): Int {
@@ -124,90 +190,87 @@ class SpeedometerView @JvmOverloads constructor(
 
         return when (specMode) {
             MeasureSpec.EXACTLY -> specSize
-            MeasureSpec.AT_MOST -> specSize
-            MeasureSpec.UNSPECIFIED -> size
-            else -> size
+            MeasureSpec.AT_MOST -> speedometerSize.coerceAtMost(specSize)
+            MeasureSpec.UNSPECIFIED -> speedometerSize
+            else -> speedometerSize
         }
     }
 
-    private fun drawSpeedometerSections(canvas: Canvas) {
-        paint.color = firstZoneColor!!
+    private fun drawSpeedometerWarning(canvas: Canvas) {
+        paint.reset()
+        paint.color = currentWarningColor
         paint.style = Paint.Style.FILL
         val oval = RectF()
 
-        oval.set(0f, 0f, size.toFloat(), size.toFloat())
-        canvas.drawArc(oval, 135f, 90f, true, paint)
-
-        paint.color = secondZoneColor!!
-        paint.style = Paint.Style.FILL
-
-        canvas.drawArc(oval, 225f, 90f, true, paint)
-
-        paint.color = thirdZoneColor!!
-        paint.style = Paint.Style.FILL
-        canvas.drawArc(oval, 315f, 90f, true, paint)
-
-        paint.color = Color.WHITE
-        paint.style = Paint.Style.FILL
-        canvas.drawArc(oval, 405f, 90f, true, paint)
+        oval.set(padding.toFloat(), padding.toFloat(), radius * 2f + padding, radius * 2f + padding)
+        canvas.drawArc(oval, 135f, currentSpeed * -SPEED_FACTOR * 180 / PI.toFloat(), true, paint)
     }
 
-    private fun drawBorder(canvas: Canvas, radius: Float) {
+    private fun drawBackground(canvas: Canvas) {
+        paint.reset()
+        paint.color = backgroundColor!!
+        paint.style = Paint.Style.FILL
+
+        canvas.drawCircle(radius + padding, radius + padding, radius, paint)
+    }
+
+    private fun drawBorder(canvas: Canvas) {
+        paint.reset()
         paint.color = borderColor!!
         paint.strokeWidth = 10f
         paint.style = Paint.Style.STROKE
 
-        canvas.drawPoint(radius, radius, paint)
-        canvas.drawCircle(radius, radius, radius, paint)
+        canvas.drawPoint(radius + padding, radius + padding, paint)
+        canvas.drawCircle(radius + padding, radius + padding, radius, paint)
 
-        for (step in 2..14) {
+        for (speed in 0..240 step 20) {
+
             canvas.drawLine(
-                radius + sin((step * PI / 8).toFloat()) * radius,
-                radius + cos((step * PI / 8).toFloat()) * radius,
-                radius + sin((step * PI / 8).toFloat()) * radius / 1.1f,
-                radius + cos((step * PI / 8).toFloat()) * radius / 1.1f,
+                radius + padding + sin(speed * SPEED_FACTOR - SPEED_SHIFT) * radius,
+                radius + padding + cos(speed * SPEED_FACTOR - SPEED_SHIFT) * radius,
+                radius + padding + sin(speed * SPEED_FACTOR - SPEED_SHIFT) * radius / 1.1f,
+                radius + padding + cos(speed * SPEED_FACTOR - SPEED_SHIFT) * radius / 1.1f,
                 paint
             )
         }
     }
 
-    private fun drawSpeedometerHand(canvas: Canvas, radius: Float) {
+    private fun drawSpeedometerHand(canvas: Canvas) {
+        paint.reset()
         paint.color = speedometerHandColor!!
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = 7f
 
 
         canvas.drawLine(
-            radius,
-            radius,
-            radius + sin((count * PI / 4).toFloat()) * radius,
-            radius + cos((count * PI / 4).toFloat()) * radius,
+            radius + padding,
+            radius + padding,
+            radius + padding + sin(currentSpeed * SPEED_FACTOR - SPEED_SHIFT) * radius,
+            radius + padding + cos(currentSpeed * SPEED_FACTOR - SPEED_SHIFT) * radius,
             paint
         )
     }
 
-    private fun drawSpeedometerDegree(canvas: Canvas, radius: Float) {
-        var speedValue = 260
-
+    private fun drawDegreeText(canvas: Canvas) {
+        paint.reset()
         paint.color = degreeTextColor!!
         paint.style = Paint.Style.STROKE
         paint.textSize = degreeTextSize!!
+        paint.strokeWidth = 5f
 
-        for (step in 2..14) {
-            paint.strokeWidth = 5f
-            speedValue -= 20
-            if (speedValue < 120) {
+        for (speed in 0..240 step 20) {
+            if (speed < 120) {
                 canvas.drawText(
-                    "$speedValue",
-                    radius - degreeTextSize!! / 1.5f + sin((step * PI / 8).toFloat()) * radius / 1.3f,
-                    radius + degreeTextSize!! / 4 + cos((step * PI / 8).toFloat()) * radius / 1.3f,
+                    "$speed",
+                    radius + padding - degreeTextSize!! / 1.5f + sin(speed * SPEED_FACTOR - SPEED_SHIFT) * radius / 1.3f,
+                    radius + padding + degreeTextSize!! / 4 + cos(speed * SPEED_FACTOR - SPEED_SHIFT) * radius / 1.3f,
                     paint
                 )
             } else {
                 canvas.drawText(
-                    "$speedValue",
-                    radius - degreeTextSize!! + sin((step * PI / 8).toFloat()) * radius / 1.3f,
-                    radius + degreeTextSize!! / 4 + cos((step * PI / 8).toFloat()) * radius / 1.3f,
+                    "$speed",
+                    radius + padding - degreeTextSize!! + sin(speed * SPEED_FACTOR - SPEED_SHIFT) * radius / 1.3f,
+                    radius + padding + degreeTextSize!! / 4 + cos(speed * SPEED_FACTOR - SPEED_SHIFT) * radius / 1.3f,
                     paint
                 )
             }

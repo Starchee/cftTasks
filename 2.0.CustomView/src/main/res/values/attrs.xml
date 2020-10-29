@@ -2,13 +2,11 @@
 <resources>
 
     <declare-styleable name="SpeedometerView">
-        <attr name="firstZoneColor" format="color"/>
-        <attr name="secondZoneColor" format="color"/>
-        <attr name="thirdZoneColor" format="color"/>
         <attr name="speedometerHandColor" format="color"/>
         <attr name="degreeTextColor" format="color"/>
         <attr name="borderColor" format="color"/>
         <attr name="degreeTextSize" format="dimension"/>
+        <attr name="backgroundColor" format="color"/>
     </declare-styleable>
 
 
@@ -17,5 +15,6 @@
         <item name="degreeTextColor">?colorPrimaryDark</item>
         <item name="borderColor">?colorPrimaryDark</item>
         <item name="degreeTextSize">?android:textSize</item>
+        <item name="backgroundColor">?colorAccent</item>
     </style>
 </resources>

@@ -7,30 +7,21 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-
-
-    <Button
-        android:id="@+id/speedUp"
-        android:text="speed up"
-        android:layout_below="@+id/speedometer"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <Button
-        android:id="@+id/speedDown"
-        android:text="speed down"
-        android:layout_below="@+id/speedUp"
-        android:layout_alignParentStart="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
     <com.starchee.customview.SpeedometerView
         android:id="@+id/speedometer"
-        app:degreeTextSize="20sp"
+        app:degreeTextSize="15sp"
+        android:padding="10dp"
         android:layout_alignParentTop="true"
-        android:layout_toEndOf="@+id/speedDown"
+        android:layout_alignParentStart="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+
+    <Button
+        android:id="@+id/accelerator"
+        android:text="accelerator"
+        android:layout_toEndOf="@+id/speedometer"
+        android:layout_alignParentEnd="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
