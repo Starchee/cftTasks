@@ -26,10 +26,11 @@ class SpeedometerView @JvmOverloads constructor(
     defStyleAttr: Int = 0,
     defStyleRes: Int = 0
 ) : View(context, attributeSet, defStyleAttr, defStyleRes) {
+
     private val paint = Paint(ANTI_ALIAS_FLAG)
     private var speedometerSize = 500
     private var padding = 20
-    private var radius = (speedometerSize - padding*2) / 2f
+    private var radius = (speedometerSize - padding * 2) / 2f
     private var currentSpeed = 0
 
     private var currentWarningColor = Color.GREEN
@@ -223,7 +224,7 @@ class SpeedometerView @JvmOverloads constructor(
         canvas.drawPoint(radius + padding, radius + padding, paint)
         canvas.drawCircle(radius + padding, radius + padding, radius, paint)
 
-        for (speed in 0..240 step 20) {
+        for (speed in 0..MAX_SPEED step 20) {
 
             canvas.drawLine(
                 radius + padding + sin(speed * SPEED_FACTOR - SPEED_SHIFT) * radius,
@@ -241,7 +242,6 @@ class SpeedometerView @JvmOverloads constructor(
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = 7f
 
-
         canvas.drawLine(
             radius + padding,
             radius + padding,
@@ -258,7 +258,7 @@ class SpeedometerView @JvmOverloads constructor(
         paint.textSize = degreeTextSize!!
         paint.strokeWidth = 5f
 
-        for (speed in 0..240 step 20) {
+        for (speed in 0..MAX_SPEED step 20) {
             if (speed < 120) {
                 canvas.drawText(
                     "$speed",
