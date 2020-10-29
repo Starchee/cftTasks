@@ -77,6 +77,7 @@ class SpeedometerView @JvmOverloads constructor(
         drawBorder(canvas)
         drawDegreeText(canvas)
         drawSpeedometerHand(canvas)
+        drawDigitalSpeed(canvas)
     }
 
     override fun onSaveInstanceState(): Parcelable? =
@@ -97,15 +98,21 @@ class SpeedometerView @JvmOverloads constructor(
 
     fun start() {
         speedDownAnimatorSet?.cancel()
-        initSpeedUpAnimatorSet()
-        speedUpAnimatorSet?.start()
+
+        if (currentSpeed == 0) {
+            initSpeedUpAnimatorSet()
+            speedUpAnimatorSet?.start()
+        }
+
+        speedUpAnimatorSet?.resume()
 
     }
 
     fun stop() {
-        speedUpAnimatorSet?.cancel()
+        speedUpAnimatorSet?.pause()
         initSpeedDownAnimatorSet()
         speedDownAnimatorSet?.start()
+
     }
 
     private fun initParams(
@@ -147,9 +154,9 @@ class SpeedometerView @JvmOverloads constructor(
             }
         }
 
-        val colorUpAnimator = ValueAnimator.ofInt(Color.GREEN, Color.RED).apply {
+        val colorUpAnimator = ValueAnimator.ofInt(currentWarningColor, Color.RED).apply {
             setEvaluator(ArgbEvaluator())
-            duration = ACCELERATION_SPEED_IN_MS
+            duration = ACCELERATION_SPEED_IN_MS - ACCELERATION_SPEED_IN_MS * currentSpeed / MAX_SPEED
             interpolator = LinearInterpolator()
             addUpdateListener {
                 currentWarningColor = it.animatedValue as Int
@@ -158,7 +165,6 @@ class SpeedometerView @JvmOverloads constructor(
         }
         speedUpAnimatorSet = AnimatorSet()
         speedUpAnimatorSet?.play(speedUpAnimator)?.with(colorUpAnimator)
-
     }
 
 
@@ -275,5 +281,28 @@ class SpeedometerView @JvmOverloads constructor(
                 )
             }
         }
+    }
+
+    private fun drawDigitalSpeed(canvas: Canvas) {
+        paint.reset()
+        paint.color = currentWarningColor
+        paint.style = Paint.Style.STROKE
+        paint.textSize = degreeTextSize!! * 2
+        paint.strokeWidth = 5f
+
+        var marginFactor = 0.5f
+
+        if (currentSpeed in 10..99) {
+            marginFactor = 1f
+        } else if (currentSpeed > 99) {
+            marginFactor = 1.5f
+        }
+
+        canvas.drawText(
+            "$currentSpeed",
+            radius + padding - degreeTextSize!! * marginFactor,
+            radius + padding + radius / 1.5f,
+            paint
+        )
     }
 }
