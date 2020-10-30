@@ -12,6 +12,7 @@ import android.graphics.RectF
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.view.animation.LinearInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
@@ -140,7 +141,7 @@ class SpeedometerView @JvmOverloads constructor(
     private fun initSpeedUpAnimatorSet() {
         val speedUpAnimator = ValueAnimator.ofInt(currentSpeed, MAX_SPEED).apply {
             duration =
-                ACCELERATION_SPEED_IN_MS - ACCELERATION_SPEED_IN_MS * currentPlayTime / MAX_SPEED
+                ACCELERATION_SPEED_IN_MS - ACCELERATION_SPEED_IN_MS * currentSpeed / MAX_SPEED
             interpolator = LinearOutSlowInInterpolator()
             addUpdateListener {
                 currentSpeed = it.animatedValue as Int
