@@ -98,21 +98,14 @@ class SpeedometerView @JvmOverloads constructor(
 
     fun start() {
         speedDownAnimatorSet?.cancel()
-
-        if (currentSpeed == 0) {
-            initSpeedUpAnimatorSet()
-            speedUpAnimatorSet?.start()
-        }
-
-        speedUpAnimatorSet?.resume()
-
+        initSpeedUpAnimatorSet()
+        speedUpAnimatorSet?.start()
     }
 
     fun stop() {
-        speedUpAnimatorSet?.pause()
+        speedUpAnimatorSet?.cancel()
         initSpeedDownAnimatorSet()
         speedDownAnimatorSet?.start()
-
     }
 
     private fun initParams(
@@ -146,7 +139,8 @@ class SpeedometerView @JvmOverloads constructor(
 
     private fun initSpeedUpAnimatorSet() {
         val speedUpAnimator = ValueAnimator.ofInt(currentSpeed, MAX_SPEED).apply {
-            duration = ACCELERATION_SPEED_IN_MS
+            duration =
+                ACCELERATION_SPEED_IN_MS - ACCELERATION_SPEED_IN_MS * currentPlayTime / MAX_SPEED
             interpolator = LinearOutSlowInInterpolator()
             addUpdateListener {
                 currentSpeed = it.animatedValue as Int
@@ -156,7 +150,8 @@ class SpeedometerView @JvmOverloads constructor(
 
         val colorUpAnimator = ValueAnimator.ofInt(currentWarningColor, Color.RED).apply {
             setEvaluator(ArgbEvaluator())
-            duration = ACCELERATION_SPEED_IN_MS - ACCELERATION_SPEED_IN_MS * currentSpeed / MAX_SPEED
+            duration =
+                ACCELERATION_SPEED_IN_MS - ACCELERATION_SPEED_IN_MS * currentSpeed / MAX_SPEED
             interpolator = LinearInterpolator()
             addUpdateListener {
                 currentWarningColor = it.animatedValue as Int
@@ -166,7 +161,6 @@ class SpeedometerView @JvmOverloads constructor(
         speedUpAnimatorSet = AnimatorSet()
         speedUpAnimatorSet?.play(speedUpAnimator)?.with(colorUpAnimator)
     }
-
 
     private fun initSpeedDownAnimatorSet() {
         val speedDownAnimator = ValueAnimator.ofInt(currentSpeed, 0).apply {
