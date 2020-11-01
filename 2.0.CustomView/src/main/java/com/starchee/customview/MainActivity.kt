@@ -13,7 +13,7 @@ class MainActivity : AppCompatActivity() {
         accelerator.setOnTouchListener { view, motionEvent ->
             if ( motionEvent.action == MotionEvent.ACTION_DOWN) {
                 speedometer.start()
-            } else {
+            } else  if ( motionEvent.action == MotionEvent.ACTION_UP) {
                 speedometer.stop()
             }
             view.performClick()
