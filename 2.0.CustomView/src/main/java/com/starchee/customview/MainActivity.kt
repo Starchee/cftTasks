@@ -11,9 +11,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         accelerator.setOnTouchListener { view, motionEvent ->
-            if ( motionEvent.action == MotionEvent.ACTION_DOWN) {
+            if (motionEvent.action == MotionEvent.ACTION_DOWN) {
                 speedometer.start()
-            } else  if ( motionEvent.action == MotionEvent.ACTION_UP) {
+            } else if (motionEvent.action == MotionEvent.ACTION_UP) {
                 speedometer.stop()
             }
             view.performClick()
