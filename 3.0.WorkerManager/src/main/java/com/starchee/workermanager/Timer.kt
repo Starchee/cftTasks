@@ -35,7 +35,7 @@ class Timer private constructor(context: Context) {
     }
 
     fun start() {
-        if (!isStopped.get()){
+        if (!isStopped.get()) {
             stop()
         }
         isStopped.set(false)
@@ -61,7 +61,7 @@ class Timer private constructor(context: Context) {
     }
 
     fun notifyWhenEnd() {
-        if ( startTimeInSeconds > 0) {
+        if (startTimeInSeconds > 0) {
             onTickListener = null
             notifyEndTimer(startTimeInSeconds)
         }
