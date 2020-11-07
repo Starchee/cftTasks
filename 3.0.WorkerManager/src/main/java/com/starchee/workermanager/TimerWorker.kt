@@ -1,5 +1,6 @@
 package com.starchee.workermanager
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -35,8 +36,9 @@ class TimerWorker(private val context: Context, workerParams: WorkerParameters) 
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()
 
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val importance = NotificationManager.IMPORTANCE_HIGH
         val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, importance)
+        channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
         val notificationManager: NotificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
