@@ -5,4 +5,5 @@
     <string name="choose">Choose</string>
     <string name="upload">upload</string>
     <string name="read_external_storage_permission_toast">Please allow storage permission in App Settings</string>
+    <string name="choose_photo_toast">Please choose photo for upload</string>
 </resources>

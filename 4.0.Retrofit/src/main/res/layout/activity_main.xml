@@ -10,35 +10,60 @@
         android:id="@+id/image_main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/title_et_main"
+        android:layout_above="@+id/title_layout_main"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:background="?android:attr/alertDialogIcon"
-        android:contentDescription="choose image" />
+        android:contentDescription="choose image"
+        android:src="?android:attr/alertDialogIcon" />
 
-    <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/title_et_main"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/title_layout_main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/description_et_main"
+        android:layout_above="@+id/description_layout_main"
+        android:layout_margin="4dp"
         android:hint="@string/title"
-        android:visibility="invisible" />
+        android:visibility="invisible">
 
-    <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/description_et_main"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/title_et_main"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/description_layout_main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/choose_btn_main"
+        android:layout_margin="4dp"
         android:hint="@string/description"
-        android:visibility="invisible" />
+        android:visibility="invisible">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/description_et_main"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.textfield.TextInputLayout>
+
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/choose_btn_main"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
         android:text="@string/choose" />
+
+    <ProgressBar
+        android:id="@+id/progress_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/description_layout_main"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/upload_btn_main"

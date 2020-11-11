@@ -16,6 +16,8 @@
             <option value="$PROJECT_DIR$/1.2.ServiceTask" />
             <option value="$PROJECT_DIR$/1.3.ContentProviderTask" />
             <option value="$PROJECT_DIR$/2.0.CustomView" />
+            <option value="$PROJECT_DIR$/3.0.WorkerManager" />
+            <option value="$PROJECT_DIR$/4.0.Retrofit" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

@@ -1,7 +1,7 @@
 package com.starchee.retrofit
 
 import android.content.res.Resources
-import io.reactivex.Completable
+import io.reactivex.Single
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
@@ -9,6 +9,7 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
+import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 
 class RetrofitRepository private constructor(
@@ -36,6 +37,7 @@ class RetrofitRepository private constructor(
         private fun buildRetrofit() {
             val retrofit = Retrofit.Builder()
                 .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .client(buildOkHttpClient())
                 .build()
@@ -51,7 +53,7 @@ class RetrofitRepository private constructor(
 
     }
 
-    fun uploadImage(title: String, description: String, image: File): Completable {
+    fun uploadImage(title: String, description: String, image: File): Single<UploadImageResponse> {
         val body = MultipartBody.Part.createFormData(
             "image",
             image.name,

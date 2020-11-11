@@ -1,6 +1,6 @@
 package com.starchee.retrofit
 
-import io.reactivex.Completable
+import io.reactivex.Single
 import okhttp3.MultipartBody
 import retrofit2.http.*
 
@@ -12,6 +12,6 @@ interface ImgurApi {
         @Header("Authorization") clientId: String,
         @Query("title") title: String,
         @Query("description") description: String,
-        @Part body: MultipartBody.Part): Completable
+        @Part body: MultipartBody.Part): Single<UploadImageResponse>
 }
 

@@ -18,6 +18,7 @@ import java.io.File
 class MainActivity : AppCompatActivity() {
 
     private var imageUri: Uri? = null
+    private var isUploadingPhoto = false
 
     companion object {
         private const val RESULT_IMG_LOAD = 10101
@@ -46,36 +47,23 @@ class MainActivity : AppCompatActivity() {
 
 
         upload_btn_main.setOnClickListener {
-            if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+            if (imageUri == null) {
+                Toast.makeText(
+                    this,
+                    R.string.choose_photo_toast,
+                    Toast.LENGTH_LONG
+                ).show()
+            } else if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
                 Toast.makeText(
                     this,
                     getString(R.string.read_external_storage_permission_toast),
                     Toast.LENGTH_LONG
                 ).show()
-            } else {
+            } else if (!isUploadingPhoto){
                 uploadImage()
             }
         }
     }
-
-    private fun uploadImage() {
-        var imageFile: File? = null
-        imageUri?.let {
-            imageFile = getFileByUri(it)
-        }
-        imageFile?.let {
-            RetrofitRepository.getInstance(resources).uploadImage(
-                title_et_main.text.toString(),
-                description_et_main.text.toString(),
-                it
-            ).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    Toast.makeText(this, "OKEY", Toast.LENGTH_SHORT).show()
-                }
-        }
-    }
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -83,8 +71,8 @@ class MainActivity : AppCompatActivity() {
             RESULT_IMG_LOAD -> {
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     image_main.setImageURI(data.data)
-                    title_et_main.visibility = View.VISIBLE
-                    description_et_main.visibility = View.VISIBLE
+                    title_layout_main.visibility = View.VISIBLE
+                    description_layout_main.visibility = View.VISIBLE
                     imageUri = data.data
                 }
             }
@@ -110,6 +98,40 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun uploadImage() {
+        isUploadingPhoto = true
+        progress_main.visibility = View.VISIBLE
+        var imageFile: File? = null
+        imageUri?.let {
+            imageFile = getFileByUri(it)
+        }
+        imageFile?.let { file ->
+            RetrofitRepository.getInstance(resources).uploadImage(
+                title_et_main.text.toString(),
+                description_et_main.text.toString(),
+                file
+            ).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ response ->
+                    Toast.makeText(
+                        this,
+                        "Uploading success, Title: ${response.data.title} Description: ${response.data.description}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    progress_main.visibility = View.GONE
+                    openLink(response.data.link)
+                }, {
+                    Toast.makeText(
+                        this,
+                        "Error!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    progress_main.visibility = View.GONE
+                })
+        }
+        isUploadingPhoto = false
+    }
+
     private fun getFileByUri(uri: Uri): File? {
         var imagePath: String? = null
         var imageFile: File? = null
@@ -126,5 +148,10 @@ class MainActivity : AppCompatActivity() {
             imageFile = File(it)
         }
         return imageFile
+    }
+
+    private fun openLink(link: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
+        startActivity(intent)
     }
 }
