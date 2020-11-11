@@ -12,6 +12,7 @@ interface ImgurApi {
         @Header("Authorization") clientId: String,
         @Query("title") title: String,
         @Query("description") description: String,
-        @Part body: MultipartBody.Part): Single<UploadImageResponse>
+        @Part body: MultipartBody.Part
+    ): Single<UploadImageResponse>
 }
 

@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
                     getString(R.string.read_external_storage_permission_toast),
                     Toast.LENGTH_LONG
                 ).show()
-            } else if (!isUploadingPhoto){
+            } else if (!isUploadingPhoto) {
                 uploadImage()
             }
         }

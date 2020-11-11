@@ -60,7 +60,7 @@ class RetrofitRepository private constructor(
             image.asRequestBody("image/*".toMediaTypeOrNull()),
         )
 
-       return retrofitService!!.uploadImage(
+        return retrofitService!!.uploadImage(
             clientId,
             title,
             description,
