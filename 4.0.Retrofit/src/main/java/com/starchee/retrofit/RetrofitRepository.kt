@@ -6,6 +6,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
@@ -19,6 +20,7 @@ class RetrofitRepository private constructor(
     private val clientId = resources.getString(R.string.Client_ID)
 
     companion object {
+        private val CLASS_NAME  = RetrofitRepository::class.java.name
         private var instance: RetrofitRepository? = null
         private var retrofitService: ImgurApi? = null
         private const val BASE_URL = "https://api.imgur.com/3/"
@@ -26,7 +28,7 @@ class RetrofitRepository private constructor(
 
         fun getInstance(resources: Resources): RetrofitRepository {
             instance ?: build(resources)
-            return instance!!
+            return instance ?: throw NullPointerException("$CLASS_NAME instance error")
         }
 
         private fun build(resources: Resources) {
@@ -62,8 +64,8 @@ class RetrofitRepository private constructor(
 
         return retrofitService!!.uploadImage(
             clientId,
-            title,
-            description,
+            title.toRequestBody("plain/text".toMediaTypeOrNull()),
+            description.toRequestBody("plain/text".toMediaTypeOrNull()),
             body
         )
     }

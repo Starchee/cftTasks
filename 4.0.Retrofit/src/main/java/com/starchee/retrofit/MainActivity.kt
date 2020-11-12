@@ -119,6 +119,7 @@ class MainActivity : AppCompatActivity() {
                         Toast.LENGTH_LONG
                     ).show()
                     progress_main.visibility = View.GONE
+                    isUploadingPhoto = false
                     openLink(response.data.link)
                 }, {
                     Toast.makeText(
@@ -127,12 +128,14 @@ class MainActivity : AppCompatActivity() {
                         Toast.LENGTH_SHORT
                     ).show()
                     progress_main.visibility = View.GONE
+                    isUploadingPhoto = false
                 })
         }
-        isUploadingPhoto = false
     }
 
-    private fun getFileByUri(uri: Uri): File? {
+    private fun getFileByUri(uri: Uri)
+            : File
+    ? {
         var imagePath: String? = null
         var imageFile: File? = null
         val projection = arrayOf(MediaStore.Images.Media.DATA)
