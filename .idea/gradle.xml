@@ -18,6 +18,7 @@
             <option value="$PROJECT_DIR$/2.0.CustomView" />
             <option value="$PROJECT_DIR$/3.0.WorkerManager" />
             <option value="$PROJECT_DIR$/4.0.Retrofit" />
+            <option value="$PROJECT_DIR$/5.0.Room" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

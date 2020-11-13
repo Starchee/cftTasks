@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">5.0.Room</string>
+    <string name="phone_1">Phone #1:</string>
+    <string name="phone_2">Phone #2:</string>
+    <string name="phone_3">Phone #3:</string>
+    <string name="read_contacts_permission_toast">Please allow contact permission in App Settings</string>
+</resources>
