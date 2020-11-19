@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.contacts_item.view.*
 
-class ContactsAdapter(val phoneOnClick: (String) -> Unit) :
+class ContactsAdapter(private val phoneOnClick: (String) -> Unit) :
     RecyclerView.Adapter<ContactsAdapter.ContactsViewHolder>() {
 
     var contactList: ArrayList<Contact> = ArrayList()
@@ -22,19 +22,17 @@ class ContactsAdapter(val phoneOnClick: (String) -> Unit) :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactsViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         val itemView = layoutInflater.inflate(R.layout.contacts_item, parent, false)
-        return ContactsViewHolder(itemView = itemView)
+        return ContactsViewHolder(itemView = itemView, phoneOnClick)
     }
 
     override fun onBindViewHolder(holder: ContactsViewHolder, position: Int) {
         holder.bind(contact = contactList[position])
     }
 
-    override fun getItemCount(): Int {
-        return contactList.count()
-    }
+    override fun getItemCount() = contactList.size
 
 
-    inner class ContactsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ContactsViewHolder(itemView: View, val phoneOnClick: (String) -> Unit) : RecyclerView.ViewHolder(itemView) {
 
         fun bind(contact: Contact) {
             itemView.apply {

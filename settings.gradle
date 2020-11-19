@@ -1,3 +1,4 @@
+include ':6.0.rxjava'
 include ':5.0.Room'
 include ':4.0.Retrofit'
 include ':3.0.WorkerManager'
