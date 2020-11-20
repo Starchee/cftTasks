@@ -19,6 +19,7 @@
             <option value="$PROJECT_DIR$/3.0.WorkerManager" />
             <option value="$PROJECT_DIR$/4.0.Retrofit" />
             <option value="$PROJECT_DIR$/5.0.Room" />
+            <option value="$PROJECT_DIR$/6.0.RxJava" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

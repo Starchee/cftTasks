@@ -16,11 +16,10 @@ import java.util.concurrent.TimeUnit
 class MainActivity : AppCompatActivity() {
 
     private val compositeDisposable = CompositeDisposable()
-    private var count = 0
 
     companion object {
         private const val STORY_FILE_NAME = "story"
-        private val REGEX_SPLIT = "\\W".toRegex()
+        private const val REGEX_SPLIT = " "
     }
 
 
@@ -35,7 +34,9 @@ class MainActivity : AppCompatActivity() {
         val buffer = StringBuffer()
         try {
             resources.openRawResource(resources.getIdentifier(STORY_FILE_NAME, "raw", packageName))
-                .use { inputStream -> inputStream.bufferedReader().forEachLine { buffer.append(it) } }
+                .use { inputStream ->
+                    inputStream.bufferedReader().forEachLine { buffer.append(it) }
+                }
         } catch (e: FileNotFoundException) {
             Toast.makeText(this, "File $STORY_FILE_NAME not found!", Toast.LENGTH_LONG).show()
         }
@@ -50,7 +51,6 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onQueryTextChange(newText: String?): Boolean {
-                    count = 0
                     newText?.let {
                         emitter.onNext(it)
                     }
@@ -63,12 +63,12 @@ class MainActivity : AppCompatActivity() {
         val searchDisposable = searchTextFlowable.subscribeOn(Schedulers.io())
             .debounce(700, TimeUnit.MILLISECONDS)
             .switchMap { filter ->
-                Flowable.fromIterable(
-                    text_view_main.text.split(REGEX_SPLIT).filter { it.contains(filter, true) })
-                    .filter { it.contains(filter, true) }
+                var count = 0
+                Flowable.fromIterable(text_view_main.text.split(REGEX_SPLIT))
                     .map { word ->
-                        if (filter.isNotEmpty()) {
-                            count += word.count { filter.contains(it, true) } / filter.count()
+                        if (filter.isNotBlank()) {
+                            count += (word.count() - word.replace(filter, "", true)
+                                .count()) / filter.count()
                             count
                         } else 0
                     }
@@ -80,6 +80,7 @@ class MainActivity : AppCompatActivity() {
             }
 
         compositeDisposable.add(searchDisposable)
+
     }
 
     override fun onDestroy() {
