@@ -80,7 +80,6 @@ class MainActivity : AppCompatActivity() {
             }
 
         compositeDisposable.add(searchDisposable)
-
     }
 
     override fun onDestroy() {
