@@ -69,8 +69,8 @@ class MainActivity : AppCompatActivity() {
                         if (filter.isNotBlank()) {
                             count += (word.count() - word.replace(filter, "", true)
                                 .count()) / filter.count()
-                            count
-                        } else 0
+                        }
+                        count
                     }
             }
             .throttleLatest(100, TimeUnit.MILLISECONDS, true)
